@@ -2,14 +2,23 @@ const request = require('supertest');
 const app = require('../service');
 const TestUtils = require('../test-utils');
 
-const testUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
-let testUserAuthToken;
+let testUser;
+let testAuthToken;
+
+let adminUser;
+let adminAuthToken;
 
 beforeAll(async () => {
-  TestUtils.setupJestDebugging();
-  testUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
-  const registerRes = await request(app).post('/api/auth').send(testUser);
-  testUserAuthToken = registerRes.body.token;
+  const testUtils = new TestUtils();
+  testUtils.setupJestDebugging();
+
+  const adminResponse = await testUtils.getAdminUser(app);
+  adminAuthToken = adminResponse.authToken;
+  adminUser = adminResponse.user;
+
+  const testUserResponse = await testUtils.getAuthUser(app);
+  testAuthToken = testUserResponse.authToken;
+  testUser = testUserResponse.user;
 });
 
 test('login', async () => {
@@ -18,10 +27,21 @@ test('login', async () => {
   expect(loginRes.body.token).toMatch(/^[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*\.[a-zA-Z0-9\-_]*$/);
 
   const { password, ...user } = { ...testUser, roles: [{ role: 'diner' }] };
-  console.log("Password", password);
+  expect(password).toBeDefined();
   expect(loginRes.body.user).toMatchObject(user);
 });
 
-test('authorizedCall', async () => {
-    console.log(testUserAuthToken);
+test('logout', async () => {
+  const logoutRes = await request(app).delete('/api/auth').set('Authorization', `Bearer ${testAuthToken}`).send(testUser);
+  expect(logoutRes.status).toBe(200);
+  expect(logoutRes.body.message).toBe('logout successful');
+});
+
+test('updateUser', async () => {
+  const updateUserRes = await request(app).put(`/api/auth/${adminUser.id}`).set('Authorization', `Bearer ${adminAuthToken}`).set('Content-Type', 'application/json').send(adminUser);
+  expect(updateUserRes.status).toBe(200);
+
+  const { password, ...adminUserWithoutPassword } = adminUser;
+  expect(password).toBeDefined();
+  expect(updateUserRes.body).toMatchObject(adminUserWithoutPassword);
 });
