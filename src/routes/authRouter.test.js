@@ -1,6 +1,7 @@
 const request = require('supertest');
 const app = require('../service');
 const TestUtils = require('../test-utils');
+const { Role } = require('../model/model');
 
 let testUser;
 let testAuthToken;
@@ -19,6 +20,28 @@ beforeAll(async () => {
   const testUserResponse = await testUtils.getAuthUser(app);
   testAuthToken = testUserResponse.authToken;
   testUser = testUserResponse.user;
+});
+
+test('register', async () => {
+  const testUtils = new TestUtils();
+
+  const newUserName = testUtils.randomName();
+  const newUserEmail = newUserName + "@jwt.com";
+  const newUserPassword = "newlyRegisteredTestPassword";
+
+  const newUser = {"name": newUserName, "email": newUserEmail, "password": newUserPassword};
+  const registerRes = await request(app).post('/api/auth').send(newUser);
+  expect(registerRes.status).toBe(200);
+
+  const returnedUser = registerRes.body.user;
+  expect(returnedUser).toBeDefined();
+
+  expect(returnedUser.name).toBe(newUserName);
+  expect(returnedUser.email).toBe(newUserEmail);
+
+  const returnedUserRoles = returnedUser.roles.map((roleObj) => roleObj.role);
+  const adminRole = Role.Admin;
+  expect(returnedUserRoles).not.toContain(adminRole);
 });
 
 test('login', async () => {

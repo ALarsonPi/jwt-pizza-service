@@ -13,6 +13,10 @@ class TestUtils {
         return Math.random().toString(36).substring(2, 12);
     }
 
+    getRandomIndex(arraySize) {
+        return Math.floor(Math.random() * arraySize);
+    }
+
     async getAuthUser(app) {
         const defaultTestUser = { name: 'pizza diner', email: 'reg@test.com', password: 'a' };
         defaultTestUser.email = Math.random().toString(36).substring(2, 12) + '@test.com';
@@ -36,6 +40,20 @@ class TestUtils {
         const testUserAuthToken = userResponse.body.token;
         const returnObj = {authToken: testUserAuthToken, user: addUserResponse};
         return returnObj;
+    }
+
+    async createNewFranchiseForAdmin(app, adminUser, adminAuthToken) {
+        const testUtils = new TestUtils();
+        const newFranchiseName = testUtils.randomName();
+        const newFranchise = {"name": newFranchiseName, "admins": [{"email": adminUser.email}]};
+        return await request(app).post(`/api/franchise`).set('Authorization', `Bearer ${adminAuthToken}`).send(newFranchise);
+    }
+    
+    async createNewStoreForAdmin(app, adminAuthToken, franchiseId) {
+        const testUtils = new TestUtils();
+        const franchiseName = testUtils.randomName();
+        const newStore = {"franchiseId": franchiseId, "name": franchiseName};
+        return await request(app).post(`/api/franchise/${franchiseId}/store`).set('Authorization', `Bearer ${adminAuthToken}`).send(newStore);
     }
 }
 
