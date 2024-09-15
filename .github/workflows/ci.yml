@@ -20,7 +20,7 @@ jobs:
         ports:
           - "3306:3306"
         options: >-
-          --health-cmd "mysqladmin ping -ptempdbpassword"
+          --health-cmd "mysqladmin ping -p tempdbpassword"
           --health-interval 10s
           --health-start-period 10s
           --health-timeout 5s
@@ -60,9 +60,18 @@ jobs:
             },
           };" > src/config.js
 
-      - name: Wait for MySQL to be ready
+      - name: Wait for MySQL to be ready and view logs
         run: |
-          until mysqladmin ping -h 127.0.0.1 -u root -p tempdbpassword --silent; do
+          TIMEOUT=60
+          END_TIME=$((SECONDS+TIMEOUT))
+          
+          while ! curl -s http://127.0.0.1:3306 > /dev/null; do
+            if [ $SECONDS -ge $END_TIME ]; then
+              echo "MySQL did not become ready in time"
+              echo "Viewing MySQL service logs:"
+              docker-compose logs mysql
+              exit 1
+            fi
             echo "Waiting for MySQL to be ready..."
             sleep 5
           done
