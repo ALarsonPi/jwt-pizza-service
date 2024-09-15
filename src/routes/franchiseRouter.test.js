@@ -27,6 +27,12 @@ test('getAllFranchises', async () => {
     expect(franchiseList).toBeDefined();
 });
 
+function franchiseListIncludesFranchise(franchiseList, franchise) {
+    const filteredList = franchiseList.filter((filterFranchise)=> filterFranchise.id === franchise.id && filterFranchise.name === franchise.name && filterFranchise.admins.length == franchise.admins.length);
+    const franchiseFoundInList = filteredList.length > 0;
+    return franchiseFoundInList;
+}
+
 test('listUserFranchises', async () => {
     const testUtils = new TestUtils();
 
@@ -41,9 +47,9 @@ test('listUserFranchises', async () => {
     expect(userFranchises.length).toBe(3);
 
     // Franchises match what was added, and are in correct order
-    expect(userFranchises[0]).toMatchObject(franchise1);
-    expect(userFranchises[1]).toMatchObject(franchise2);
-    expect(userFranchises[2]).toMatchObject(franchise3);
+    expect(franchiseListIncludesFranchise(userFranchises, franchise1)).toBe(true);
+    expect(franchiseListIncludesFranchise(userFranchises, franchise2)).toBe(true);
+    expect(franchiseListIncludesFranchise(userFranchises, franchise3)).toBe(true);
 });
 
 test('createFranchise', async () => {

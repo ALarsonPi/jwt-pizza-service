@@ -23,6 +23,9 @@ test('getMenu', async () => {
     const getMenuRes = await request(app).get('/api/order/menu').send(testUser);
     expect(getMenuRes.status).toBe(200);
     const menuList = getMenuRes.body;
+
+    const addedItemRes = await addItemToMenu();
+    expect(addedItemRes.status).toBe(200);
     expect(menuList.length).toBeGreaterThan(0);
 
     // Every menu should have an image, a title, a price, and a description
