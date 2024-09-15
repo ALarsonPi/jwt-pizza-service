@@ -40,13 +40,6 @@ jobs:
       - name: Lint
         run: npm run lint
 
-      - name: Wait for MySQL to be ready
-        run: |
-          until mysqladmin ping -h127.0.0.1 -u root -p tempdbpassword --silent; do
-            echo "Waiting for MySQL to be ready..."
-            sleep 5
-          done
-
       - name: Write config file
         run: |
           echo "module.exports = {
@@ -66,6 +59,13 @@ jobs:
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
             },
           };" > src/config.js
+
+      - name: Wait for MySQL to be ready
+        run: |
+          until mysqladmin ping -h 127.0.0.1 -u root -p tempdbpassword --silent; do
+            echo "Waiting for MySQL to be ready..."
+            sleep 5
+          done
 
       - name: Tests
         run: npm test -- --verbose
