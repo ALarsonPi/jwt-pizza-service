@@ -60,22 +60,6 @@ jobs:
             },
           };" > src/config.js
 
-      - name: Wait for MySQL to be ready and view logs
-        run: |
-          TIMEOUT=60
-          END_TIME=$((SECONDS+TIMEOUT))
-          
-          while ! curl -s http://127.0.0.1:3306 > /dev/null; do
-            if [ $SECONDS -ge $END_TIME ]; then
-              echo "MySQL did not become ready in time"
-              echo "Viewing MySQL service logs:"
-              docker-compose logs mysql
-              exit 1
-            fi
-            echo "Waiting for MySQL to be ready..."
-            sleep 5
-          done
-
       - name: Tests
         run: npm test -- --verbose
 
