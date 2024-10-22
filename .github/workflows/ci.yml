@@ -157,3 +157,4 @@ jobs:
         service: jwt-pizza-service
         cluster: jwt-pizza-service-cluster
         wait-for-service-stability: false
+        
