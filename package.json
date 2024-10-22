@@ -5,6 +5,9 @@
   "main": "index.js",
   "scripts": {
     "start": "cd src && node index.js",
+    "docker-build": "cp Dockerfile dist && cp -r src/* dist && cp *.json dist && cd dist && docker build --platform=linux/arm64 -t jwt-pizza-service .",
+    "docker-run": "docker run -d --name jwt-pizza-service -p 80:80 jwt-pizza-service",
+    "docker-end": "docker rm -fv jwt-pizza-service",
     "test": "jest",
     "lint": "eslint ."
   },
