@@ -8,7 +8,7 @@ read env
 if [ "$env" == "local" ]; then
     host="http://localhost:3000"
 elif [ "$env" == "prod" ]; then
-    host="https://pizza-pi.click"
+    host="https://pizza-service.virtual-pizza.click"
 else
     echo "Invalid option. Please choose 'prod' or 'local'."
     exit 1
