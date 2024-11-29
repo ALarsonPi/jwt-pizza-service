@@ -1,9 +1,9 @@
-const config = require('./config.json');
+const config = require('./config.js');
 const os = require('os');
 const fetch = require('node-fetch');
 
 class Metrics {
-  constructor(period = 60000) {
+  constructor(period = 1000) {
     this.totalRequests = 0;
     this.totalGetRequests = 0;
     this.totalPostRequests = 0;
@@ -32,14 +32,10 @@ class Metrics {
   sendMetricsPeriodically(period) {
     const timer = setInterval(() => {
       try {
-        const metricsData = [];
-        metricsData.push(this.getCpuUsagePercentage());
-        metricsData.push(this.getMemoryUsagePercentage());
-        metricsData.push(`totalRequests=${this.totalRequests}`);
-        metricsData.push(`totalGetRequests=${this.totalGetRequests}`);
-        metricsData.push(`totalPostRequests=${this.totalPostRequests}`);
-        metricsData.push(`totalDeleteRequests=${this.totalDeleteRequests}`);
-
+        const metricsData = [
+          `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
+          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests}`
+        ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);
       } catch (error) {
@@ -51,40 +47,42 @@ class Metrics {
   }
 
   sendMetricToGrafana(metricsString) {
-    const payload = `${metricsString},source=${config.source}`;
-
-    fetch(config.url, {
-      method: 'POST',
-      body: payload,
-      headers: {
-        'Authorization': `Bearer ${config.userId}:${config.apiKey}`,
-        'Content-Type': 'text/plain',
-      },
-    })
-      .then((response) => {
-        if (!response.ok) {
-          console.error('Failed to push metrics data to Grafana');
-        } else {
-          console.log('Metrics successfully pushed:', metricsString);
-        }
+    const payload = `${metricsString}`;
+    try {
+      fetch(config.metrics.grafanaPostUrl, {
+        method: 'POST',
+        body: payload,
+        headers: {
+          'Authorization': `Bearer ${config.metrics.grafanaUserId + ':' + config.metrics.grafanaApiKey}`,
+          'Content-Type': 'text/plain',
+        },
       })
-      .catch((error) => {
-        console.error('Error pushing metrics:', error);
-      });
+        .then((response) => {
+          if (!response.ok) {
+            console.error('Failed to push metrics data to Grafana', response);
+          } else {
+            console.log('Metrics successfully pushed:', metricsString);
+          }
+        })
+        .catch((error) => {
+          console.error('Error pushing metrics:', error);
+        });
+    } catch (e) {
+      console.log("Err", e);
+    }
   }
 
   getCpuUsagePercentage() {
     const cpuUsage = os.loadavg()[0] / os.cpus().length;
-    return `cpuUsagePercentage=${(cpuUsage * 100).toFixed(2)}`;
+    return (cpuUsage * 100).toFixed(2);
   }
 
   getMemoryUsagePercentage() {
     const totalMemory = os.totalmem();
     const freeMemory = os.freemem();
     const usedMemory = totalMemory - freeMemory;
-    return `memoryUsagePercentage=${((usedMemory / totalMemory) * 100).toFixed(2)}`;
+    return ((usedMemory / totalMemory) * 100).toFixed(2);
   }
 }
 
-const metrics = new Metrics();
-module.exports = metrics;
+module.exports = new Metrics();
