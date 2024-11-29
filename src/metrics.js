@@ -53,9 +53,9 @@ class Metrics {
       res.on('finish', () => {
         const totalTime = Date.now() - start;
         const totalLatencyInSeconds =  totalTime / 1000;
-        this.creationLatencyInSeconds += totalLatencyInSeconds;
+        this.creationLatencyInSeconds = totalLatencyInSeconds;
         if (req.timingData.fetchTime !== null) {
-          this.serviceLatencyInMilliseconds += req.timingData.fetchTime;
+          this.serviceLatencyInMilliseconds = req.timingData.fetchTime;
         }
       });
     }
@@ -99,7 +99,9 @@ class Metrics {
           this.activeUsers++;
           this.successfulLogins++;
         } else if (req.method === 'DELETE') {
-          this.activeUsers--;
+          if (this.activeUsers > 0) {
+            this.activeUsers--;
+          }
           this.successfulLogouts++;
         }
       } else {
