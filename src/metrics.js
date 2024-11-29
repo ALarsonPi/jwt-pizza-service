@@ -4,6 +4,7 @@ const fetch = require('node-fetch');
 
 class Metrics {
   constructor(period = 1000) {
+    console.log("Resetting totals again");
     this.totalRequests = 0;
     this.totalGetRequests = 0;
     this.totalPutRequests = 0;
@@ -90,4 +91,5 @@ class Metrics {
   }
 }
 
-module.exports = new Metrics();
+const metrics = new Metrics();
+module.exports = metrics;
