@@ -19,6 +19,9 @@ class Metrics {
     this.creationFailures = 0;
     this.totalRevenue = 0;
 
+    this.creationLatencyInSeconds = 0;
+    this.serviceLatencyInMilliseconds = 0;
+
     this.sendMetricsPeriodically(period);
   }
 
@@ -42,6 +45,21 @@ class Metrics {
 
     next();
   };
+
+  latencyTracker = (req, res, next) => {
+    if (req.path === '/api/order' && req.method == 'POST') {
+      const start = Date.now();
+      req.timingData = { start, fetchTime: null };
+      res.on('finish', () => {
+        const totalTime = Date.now() - start;
+        console.log(`Total time for ${req.method} ${req.originalUrl}: ${totalTime}ms`);
+        if (req.timingData.fetchTime !== null) {
+          console.log(`Fetch call took: ${req.timingData.fetchTime}ms`);
+        }
+      });
+    }
+    next();
+  }
 
   purchaseTracker = (req, res, next) => {
     if (req.path === '/api/order' && req.method == 'POST') {
@@ -97,7 +115,8 @@ class Metrics {
           `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
           `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests},put=${this.totalPutRequests}`,
           `auth,source=${config.metrics.grafanaSource} numActive=${this.activeUsers},successfulLogins=${this.successfulLogins},successfulLogouts=${this.successfulLogouts},unsuccessfulAuthCalls=${this.unsuccessfulAuthCalls}`,
-          `purchase,source=${config.metrics.grafanaSource} pizzasSold=${this.pizzasSold},creationFailures=${this.creationFailures},totalRevenue=${this.totalRevenue}`
+          `purchase,source=${config.metrics.grafanaSource} pizzasSold=${this.pizzasSold},creationFailures=${this.creationFailures},totalRevenue=${this.totalRevenue}`,
+          `latency,source=${config.metrics.grafanaSource} creationLatency=${this.creationLatencyInSeconds},serviceLatency=${this.serviceLatencyInMilliseconds}`
         ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);

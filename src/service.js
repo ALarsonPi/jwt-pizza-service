@@ -19,6 +19,7 @@ app.use((req, res, next) => {
 app.use(metricsTracker.requestTracker);
 app.use(metricsTracker.authTracker);
 app.use(metricsTracker.purchaseTracker);
+app.use(metricsTracker.latencyTracker);
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
 apiRouter.use('/auth', authRouter);
