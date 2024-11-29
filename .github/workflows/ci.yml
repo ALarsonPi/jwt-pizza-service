@@ -59,11 +59,11 @@ jobs:
               apiKey: '${{ secrets.FACTORY_API_KEY }}',
             },
             metrics: {
-              source: 'jwt-pizza-service',
-              userId: ${{ secrets.METRICS_USER_ID }},
-              url: '${{ secrets.METRICS_URL }}',
-              apiKey: '${{ secrets.METRICS_API_KEY }}',
-            },            
+              grafanaSource: 'jwt-pizza-service',
+              grafanaUserId: ${{ secrets.METRICS_USER_ID }},
+              grafanaPostUrl: '${{ secrets.METRICS_URL }}',
+              grafanaApiKey: '${{ secrets.METRICS_API_KEY }}',
+            },         
           };" > src/config.js
 
       - name: Tests

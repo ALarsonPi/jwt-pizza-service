@@ -6,6 +6,7 @@ class Metrics {
   constructor(period = 1000) {
     this.totalRequests = 0;
     this.totalGetRequests = 0;
+    this.totalPutRequests = 0;
     this.totalPostRequests = 0;
     this.totalDeleteRequests = 0;
 
@@ -24,6 +25,9 @@ class Metrics {
       case 'DELETE':
         this.totalDeleteRequests++;
         break;
+      case 'PUT':
+        this.totalPutRequests++;
+        break;
     }
 
     next();
@@ -34,7 +38,7 @@ class Metrics {
       try {
         const metricsData = [
           `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
-          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests}`
+          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests}, put=${this.totalPutRequests}`
         ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);
