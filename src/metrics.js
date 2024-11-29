@@ -4,12 +4,12 @@ const fetch = require('node-fetch');
 
 class Metrics {
   constructor(period = 1000) {
-    console.log("Resetting totals again");
     this.totalRequests = 0;
     this.totalGetRequests = 0;
     this.totalPutRequests = 0;
     this.totalPostRequests = 0;
     this.totalDeleteRequests = 0;
+    this.activeUsers = 0;
 
     this.sendMetricsPeriodically(period);
   }
@@ -35,12 +35,24 @@ class Metrics {
     next();
   };
 
+  activeUsersTracker = (req, _, next) => {
+    if (req.path === '/api/auth') {
+      if (req.method === 'PUT') {
+        this.activeUsers++;
+      } else if (req.method === 'DELETE') {
+        this.activeUsers--;
+      }
+    }
+    next();
+  }
+
   sendMetricsPeriodically(period) {
     const timer = setInterval(() => {
       try {
         const metricsData = [
           `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
-          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests},put=${this.totalPutRequests}`
+          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests},put=${this.totalPutRequests}`,
+          `users,source=${config.metrics.grafanaSource} numActive=${this.activeUsers}`
         ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);
