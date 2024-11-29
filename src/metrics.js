@@ -52,9 +52,10 @@ class Metrics {
       req.timingData = { start, fetchTime: null };
       res.on('finish', () => {
         const totalTime = Date.now() - start;
-        console.log(`Total time for ${req.method} ${req.originalUrl}: ${totalTime}ms`);
+        const totalLatencyInSeconds =  totalTime / 1000;
+        this.creationLatencyInSeconds += totalLatencyInSeconds;
         if (req.timingData.fetchTime !== null) {
-          console.log(`Fetch call took: ${req.timingData.fetchTime}ms`);
+          this.serviceLatencyInMilliseconds += req.timingData.fetchTime;
         }
       });
     }
