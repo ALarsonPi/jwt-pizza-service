@@ -14,6 +14,7 @@ class Metrics {
   }
 
   requestTracker = (req, _, next) => {
+    console.log(`Received ${req.method} request`);
     this.totalRequests++;
     switch (req.method) {
       case 'GET':
