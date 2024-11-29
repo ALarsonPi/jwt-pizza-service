@@ -38,7 +38,7 @@ class Metrics {
       try {
         const metricsData = [
           `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
-          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests}, put=${this.totalPutRequests}`
+          `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests},put=${this.totalPutRequests}`
         ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);
