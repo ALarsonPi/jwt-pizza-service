@@ -9,10 +9,15 @@ class Metrics {
     this.totalPutRequests = 0;
     this.totalPostRequests = 0;
     this.totalDeleteRequests = 0;
+
     this.activeUsers = 0;
     this.successfulLogins = 0;
     this.successfulLogouts = 0;
     this.unsuccessfulAuthCalls = 0;
+
+    this.pizzasSold = 0;
+    this.creationFailures = 0;
+    this.totalRevenue = 0;
 
     this.sendMetricsPeriodically(period);
   }
@@ -37,6 +42,29 @@ class Metrics {
 
     next();
   };
+
+  purchaseTracker = (req, res, next) => {
+    if (req.path === '/api/order' && req.method == 'POST') {
+      this._handleOnFinishOrderCall(req, res);
+    }
+    next();
+  }
+
+  _handleOnFinishOrderCall(req, res) {
+    res.on('finish', () => { 
+      if (res.statusCode === 200) {
+        const { items } = req.body;
+        let totalOrderValue = 0;
+        items.forEach(item => {
+          totalOrderValue += item.price;
+        });
+        this.totalRevenue += totalOrderValue;
+        this.pizzasSold += items.length;
+      } else {
+        this.creationFailures++;
+      }
+    });
+  }
 
   authTracker = (req, res, next) => {
     if (req.path === '/api/auth') {
@@ -68,7 +96,8 @@ class Metrics {
         const metricsData = [
           `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
           `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests},put=${this.totalPutRequests}`,
-          `auth,source=${config.metrics.grafanaSource} numActive=${this.activeUsers},successfulLogins=${this.successfulLogins},successfulLogouts=${this.successfulLogouts},unsuccessfulAuthCalls=${this.unsuccessfulAuthCalls}`
+          `auth,source=${config.metrics.grafanaSource} numActive=${this.activeUsers},successfulLogins=${this.successfulLogins},successfulLogouts=${this.successfulLogouts},unsuccessfulAuthCalls=${this.unsuccessfulAuthCalls}`,
+          `purchase,source=${config.metrics.grafanaSource} pizzasSold=${this.pizzasSold},creationFailures=${this.creationFailures},totalRevenue=${this.totalRevenue}`
         ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);
