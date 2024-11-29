@@ -10,6 +10,9 @@ class Metrics {
     this.totalPostRequests = 0;
     this.totalDeleteRequests = 0;
     this.activeUsers = 0;
+    this.successfulLogins = 0;
+    this.successfulLogouts = 0;
+    this.unsuccessfulAuthCalls = 0;
 
     this.sendMetricsPeriodically(period);
   }
@@ -35,15 +38,28 @@ class Metrics {
     next();
   };
 
-  activeUsersTracker = (req, _, next) => {
+  authTracker = (req, res, next) => {
     if (req.path === '/api/auth') {
-      if (req.method === 'PUT') {
-        this.activeUsers++;
-      } else if (req.method === 'DELETE') {
-        this.activeUsers--;
-      }
+      this._handleOnFinishAuthCall(req, res);
     }
     next();
+  }
+
+  _handleOnFinishAuthCall(req, res) {
+    res.on('finish', () => {
+      if (res.statusCode === 200) {
+        if (req.method === 'PUT') {
+          this.activeUsers++;
+          this.successfulLogins++;
+        } else if (req.method === 'DELETE') {
+          this.activeUsers--;
+          this.successfulLogouts++;
+        }
+      } else {
+        this.unsuccessfulAuthCalls++;
+        console.log('API call to /api/auth failed with status:', res.statusCode);
+      }
+    });
   }
 
   sendMetricsPeriodically(period) {
@@ -52,7 +68,7 @@ class Metrics {
         const metricsData = [
           `hardware,source=${config.metrics.grafanaSource} cpuUsagePercentage=${this.getCpuUsagePercentage()},memoryUsagePercentage=${this.getMemoryUsagePercentage()}`,
           `requests,source=${config.metrics.grafanaSource} total=${this.totalRequests},get=${this.totalGetRequests},post=${this.totalPostRequests},delete=${this.totalDeleteRequests},put=${this.totalPutRequests}`,
-          `users,source=${config.metrics.grafanaSource} numActive=${this.activeUsers}`
+          `auth,source=${config.metrics.grafanaSource} numActive=${this.activeUsers},successfulLogins=${this.successfulLogins},successfulLogouts=${this.successfulLogouts},unsuccessfulAuthCalls=${this.unsuccessfulAuthCalls}`
         ];
         const metricsString = metricsData.join('\n');
         this.sendMetricToGrafana(metricsString);
