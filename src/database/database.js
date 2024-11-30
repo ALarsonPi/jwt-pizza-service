@@ -287,15 +287,20 @@ class DB {
   }
 
   async query(connection, sql, params) {
-    let results;
+    const [results] = await connection.execute(sql, params);
+    return results;
+  }
+
+  async queryWithLogging(connection, sql, params) {
     try {
-      [results] = await connection.execute(sql, params);
+      const results = await this.query(connection, sql, params);
       const logData = {
         query: logController.sanitize(sql),
         params: logController.sanitize(params),
-        result: logController.sanitize(results)
+        result: logController.sanitize(results),
       };
       logController.log('info', 'database', logData);
+      return results;
     } catch (error) {
       logController.log('error', 'database', {
         error: error.message,
@@ -304,7 +309,6 @@ class DB {
       });
       throw error;
     }
-    return results;
   }
 
   async getID(connection, key, value, table) {
