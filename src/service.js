@@ -5,6 +5,7 @@ const franchiseRouter = require('./routes/franchiseRouter.js');
 const version = require('./version.json');
 const config = require('./config.js');
 const metricsTracker = require('./metrics.js');
+const logController = require('./logger.js');
 
 const app = express();
 app.use(express.json());
@@ -20,6 +21,7 @@ app.use(metricsTracker.requestTracker);
 app.use(metricsTracker.authTracker);
 app.use(metricsTracker.purchaseTracker);
 app.use(metricsTracker.latencyTracker);
+app.use(logController.httpLogger);
 const apiRouter = express.Router();
 app.use('/api', apiRouter);
 apiRouter.use('/auth', authRouter);
