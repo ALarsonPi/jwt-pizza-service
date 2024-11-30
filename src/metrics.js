@@ -74,11 +74,13 @@ class Metrics {
     res.on('finish', () => { 
       if (res.statusCode === 200) {
         const { items } = req.body;
-        const { jwt, reportUrl } = res.body;
-        const logData = {
-          order: logController.sanitize(items),
-          jwt: logController.sanitize(jwt),
-          reportUrl: logController.sanitize(reportUrl)
+        const jwt = res.locals.jwt || '';
+        const reportUrl = res.locals.reportUrl || '';
+
+        const logData = { 
+          order: logController.sanitize(items), 
+          jwt: logController.sanitize(jwt), 
+          reportUrl: logController.sanitize(reportUrl) 
         };
         logController.log('info', 'factoryRequest', logData);
 
@@ -90,10 +92,8 @@ class Metrics {
         this.pizzasSold += items.length;
       } else {
         this.creationFailures++;
-        let reportUrl = '';
-        if (res.j.reportUrl) {
-          reportUrl = res.j.reportUrl;
-        }
+
+        let reportUrl = res.locals.reportUrl || '';
         logController.log('error', 'factoryRequest', {
           error: 'Failed to fulfill order at factory',
           reportUrl: logController.sanitize(reportUrl),

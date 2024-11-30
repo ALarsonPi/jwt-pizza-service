@@ -89,8 +89,11 @@ orderRouter.post(
     const j = await r.json();
     req.timingData.fetchTime = Date.now() - fetchStart;
     if (r.ok) {
+      res.locals.jwt = j.jwt;
+      res.locals.reportUrl = j.reportUrl;
       res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
     } else {
+      res.locals.reportUrl = j.reportUrl;
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
     }
   })
