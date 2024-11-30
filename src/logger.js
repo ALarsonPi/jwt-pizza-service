@@ -25,8 +25,6 @@ class Logger {
         return async function (connection, sql, params) {
           try {
             const results = await queryFunction(connection, sql, params);
-            console.log("AAHHHHHH", results, sql, params);
-
             const safeSql = sql || ''; 
             const safeParams = params || '';
             const safeResults = results || '';
@@ -38,7 +36,6 @@ class Logger {
             logController.log('info', 'database', logData);
             return results;
           } catch (error) {
-            console.log("NAAAAAH", error, sql, params);
             const safeSql = sql || ''; 
             const safeParams = params || '';
             logController.log('error', 'database', {
