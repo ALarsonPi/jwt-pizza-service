@@ -8,6 +8,7 @@ const logController = require('../logger.js');
 
 class DB {
   constructor() {
+    this.query = this.queryWithLogging;
     this.initialized = this.initializeDatabase();
   }
 
