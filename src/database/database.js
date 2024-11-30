@@ -294,7 +294,7 @@ class DB {
 
   async queryWithLogging(connection, sql, params) {
     try {
-      const results = await this.query(connection, sql, params);
+      const results = await this._query(connection, sql, params);
       const logData = {
         query: logController.sanitize(sql),
         params: logController.sanitize(params),
