@@ -287,7 +287,7 @@ class DB {
     return '';
   }
 
-  async query(connection, sql, params) {
+  async _query(connection, sql, params) {
     const [results] = await connection.execute(sql, params);
     return results;
   }
