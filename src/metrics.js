@@ -1,6 +1,7 @@
 const config = require('./config.js');
 const os = require('os');
 const fetch = require('node-fetch');
+const logController = require('./logger.js');
 
 class Metrics {
   constructor(period = 1000) {
@@ -72,6 +73,13 @@ class Metrics {
   _handleOnFinishOrderCall(req, res) {
     res.on('finish', () => { 
       if (res.statusCode === 200) {
+        const logData = {
+          order: logController.sanitize(res.order),
+          jwt: logController.sanitize(res.j.jwt),
+          reportUrl: logController.sanitize(res.j.reportUrl)
+        };
+        logController.log('info', 'factoryRequest', logData);
+
         const { items } = req.body;
         let totalOrderValue = 0;
         items.forEach(item => {
@@ -81,6 +89,14 @@ class Metrics {
         this.pizzasSold += items.length;
       } else {
         this.creationFailures++;
+        let reportUrl = '';
+        if (res.j.reportUrl) {
+          reportUrl = res.j.reportUrl;
+        }
+        logController.log('error', 'factoryRequest', {
+          error: 'Failed to fulfill order at factory',
+          reportUrl: logController.sanitize(reportUrl),
+        });
       }
     });
   }
