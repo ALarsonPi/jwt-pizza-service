@@ -8,7 +8,7 @@ const logController = require('../logger.js');
 
 class DB {
   constructor() {
-    this.query = this.queryWithLogging;
+    this.query = logController.queryWithLogging(this.query.bind(this));
     this.initialized = this.initializeDatabase();
   }
 
@@ -287,29 +287,9 @@ class DB {
     return '';
   }
 
-  async _query(connection, sql, params) {
+  async query(connection, sql, params) {
     const [results] = await connection.execute(sql, params);
     return results;
-  }
-
-  async queryWithLogging(connection, sql, params) {
-    try {
-      const results = await this._query(connection, sql, params);
-      const logData = {
-        query: logController.sanitize(sql),
-        params: logController.sanitize(params),
-        result: logController.sanitize(results),
-      };
-      logController.log('info', 'database', logData);
-      return results;
-    } catch (error) {
-      logController.log('error', 'database', {
-        error: error.message,
-        query: logController.sanitize(sql),
-        params: logController.sanitize(params),
-      });
-      throw error;
-    }
   }
 
   async getID(connection, key, value, table) {

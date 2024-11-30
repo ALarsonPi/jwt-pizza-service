@@ -20,6 +20,28 @@ class Logger {
       };
       next();
     };
+
+    queryWithLogging(queryFunction) {
+        return async function (connection, sql, params) {
+          try {
+            const results = await queryFunction(connection, sql, params);
+            const logData = {
+              query: logController.sanitize(sql),
+              params: logController.sanitize(params),
+              result: logController.sanitize(results),
+            };
+            logController.log('info', 'database', logData);
+            return results;
+          } catch (error) {
+            logController.log('error', 'database', {
+              error: error.message,
+              query: logController.sanitize(sql),
+              params: logController.sanitize(params),
+            });
+            throw error;
+          }
+        };
+    }
   
     log(level, type, logData) {
       const labels = { component: config.logging.source, level: level, type: type };
