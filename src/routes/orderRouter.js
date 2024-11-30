@@ -94,13 +94,15 @@ orderRouter.post(
         jwt: logController.sanitize(j.jwt),
         reportUrl: logController.sanitize(j.reportUrl)
       };
-      logController.log('info', 'factoryRequest', logData);
+      console.log(logData);
+      // logController.log('info', 'factoryRequest', logData);
       res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
     } else {
-      logController.log('error', 'factoryRequest', {
-        error: 'Failed to fulfill order at factory',
-        reportUrl: logController.sanitize(j.reportUrl),
-      });
+      // logController.log('error', 'factoryRequest', {
+      //   error: 'Failed to fulfill order at factory',
+      //   reportUrl: logController.sanitize(j.reportUrl),
+      // });
+      console.log("Error");
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
     }
   })

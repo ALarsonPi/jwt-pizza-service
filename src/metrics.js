@@ -145,8 +145,6 @@ class Metrics {
         .then((response) => {
           if (!response.ok) {
             console.error('Failed to push metrics data to Grafana', response);
-          } else {
-            console.log('Metrics successfully pushed:', metricsString);
           }
         })
         .catch((error) => {
