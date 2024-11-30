@@ -73,14 +73,14 @@ class Metrics {
   _handleOnFinishOrderCall(req, res) {
     res.on('finish', () => { 
       if (res.statusCode === 200) {
+        const { items, jwt, reportUrl } = req.body;
         const logData = {
-          order: logController.sanitize(res.order),
-          jwt: logController.sanitize(res.j.jwt),
-          reportUrl: logController.sanitize(res.j.reportUrl)
+          order: logController.sanitize(items),
+          jwt: logController.sanitize(jwt),
+          reportUrl: logController.sanitize(reportUrl)
         };
         logController.log('info', 'factoryRequest', logData);
 
-        const { items } = req.body;
         let totalOrderValue = 0;
         items.forEach(item => {
           totalOrderValue += item.price;
