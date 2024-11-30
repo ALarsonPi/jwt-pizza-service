@@ -26,19 +26,25 @@ class Logger {
           try {
             const results = await queryFunction(connection, sql, params);
             console.log("AAHHHHHH", results, sql, params);
+
+            const safeSql = sql || ''; 
+            const safeParams = params || '';
+            const safeResults = results || '';
             const logData = {
-              query: logController.sanitize(sql),
-              params: logController.sanitize(params),
-              result: logController.sanitize(results),
+              query: logController.sanitize(safeSql),
+              params: logController.sanitize(safeParams),
+              result: logController.sanitize(safeResults),
             };
             logController.log('info', 'database', logData);
             return results;
           } catch (error) {
             console.log("NAAAAAH", error, sql, params);
+            const safeSql = sql || ''; 
+            const safeParams = params || '';
             logController.log('error', 'database', {
               error: error.message,
-              query: logController.sanitize(sql),
-              params: logController.sanitize(params),
+              query: logController.sanitize(safeSql),
+              params: logController.sanitize(safeParams),
             });
             throw error;
           }
