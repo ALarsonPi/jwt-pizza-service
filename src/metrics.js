@@ -73,7 +73,8 @@ class Metrics {
   _handleOnFinishOrderCall(req, res) {
     res.on('finish', () => { 
       if (res.statusCode === 200) {
-        const { items, jwt, reportUrl } = req.body;
+        const { items } = req.body;
+        const { jwt, reportUrl } = res.body;
         const logData = {
           order: logController.sanitize(items),
           jwt: logController.sanitize(jwt),
