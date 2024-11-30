@@ -3,7 +3,7 @@ const config = require('../config.js');
 const { Role, DB } = require('../database/database.js');
 const { authRouter } = require('./authRouter.js');
 const { asyncHandler, StatusCodeError } = require('../endpointHelper.js');
-const logController = require('../logger.js');
+// const logController = require('../logger.js');
 
 const orderRouter = express.Router();
 
@@ -89,12 +89,11 @@ orderRouter.post(
     const j = await r.json();
     req.timingData.fetchTime = Date.now() - fetchStart;
     if (r.ok) {
-      const logData = {
-        order: logController.sanitize(order),
-        jwt: logController.sanitize(j.jwt),
-        reportUrl: logController.sanitize(j.reportUrl)
-      };
-      console.log(logData);
+      // const logData = {
+      //   order: logController.sanitize(order),
+      //   jwt: logController.sanitize(j.jwt),
+      //   reportUrl: logController.sanitize(j.reportUrl)
+      // };
       // logController.log('info', 'factoryRequest', logData);
       res.send({ order, jwt: j.jwt, reportUrl: j.reportUrl });
     } else {
@@ -102,7 +101,6 @@ orderRouter.post(
       //   error: 'Failed to fulfill order at factory',
       //   reportUrl: logController.sanitize(j.reportUrl),
       // });
-      console.log("Error");
       res.status(500).send({ message: 'Failed to fulfill order at factory', reportUrl: j.reportUrl });
     }
   })
